@@ -345,19 +345,61 @@ impl GatewayAcknowledgement {
 
 fn valid_utc_timestamp(value: &str) -> bool {
     let bytes = value.as_bytes();
-    bytes.len() >= 20
-        && value.ends_with('Z')
-        && bytes.get(4) == Some(&b'-')
-        && bytes.get(7) == Some(&b'-')
-        && bytes.get(10) == Some(&b'T')
-        && bytes.get(13) == Some(&b':')
-        && bytes.get(16) == Some(&b':')
-        && bytes[..4].iter().all(u8::is_ascii_digit)
-        && bytes[5..7].iter().all(u8::is_ascii_digit)
-        && bytes[8..10].iter().all(u8::is_ascii_digit)
-        && bytes[11..13].iter().all(u8::is_ascii_digit)
-        && bytes[14..16].iter().all(u8::is_ascii_digit)
-        && bytes[17..19].iter().all(u8::is_ascii_digit)
+    if bytes.len() < 20
+        || !value.ends_with('Z')
+        || bytes.get(4) != Some(&b'-')
+        || bytes.get(7) != Some(&b'-')
+        || bytes.get(10) != Some(&b'T')
+        || bytes.get(13) != Some(&b':')
+        || bytes.get(16) != Some(&b':')
+    {
+        return false;
+    }
+
+    let fraction = &bytes[19..bytes.len() - 1];
+    if !fraction.is_empty()
+        && (fraction.first() != Some(&b'.')
+            || fraction.len() == 1
+            || !fraction[1..].iter().all(u8::is_ascii_digit))
+    {
+        return false;
+    }
+
+    let Some(year) = decimal(&bytes[..4]) else {
+        return false;
+    };
+    let Some(month) = decimal(&bytes[5..7]) else {
+        return false;
+    };
+    let Some(day) = decimal(&bytes[8..10]) else {
+        return false;
+    };
+    let Some(hour) = decimal(&bytes[11..13]) else {
+        return false;
+    };
+    let Some(minute) = decimal(&bytes[14..16]) else {
+        return false;
+    };
+    let Some(second) = decimal(&bytes[17..19]) else {
+        return false;
+    };
+
+    let leap_year = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let days_in_month = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap_year => 29,
+        2 => 28,
+        _ => return false,
+    };
+    year > 0 && (1..=days_in_month).contains(&day) && hour <= 23 && minute <= 59 && second <= 59
+}
+
+fn decimal(bytes: &[u8]) -> Option<u32> {
+    bytes.iter().try_fold(0_u32, |value, byte| {
+        byte.is_ascii_digit()
+            .then(|| value * 10 + u32::from(byte - b'0'))
+    })
 }
 
 fn write_canonical_json(value: &Value, output: &mut String) -> Result<(), PolicyError> {
@@ -443,8 +485,8 @@ mod tests {
         assert!(!canonical.contains(' '));
         assert!(canonical.starts_with("{\"generated_at\":"));
         assert_eq!(
-            manifest.digest().expect("digest succeeds").as_str().len(),
-            64
+            manifest.digest().expect("digest succeeds").as_str(),
+            "c9c61a8222f6b33d7d8212917be6fc26dffefa5370164154460ad25373b5c17b"
         );
     }
 
@@ -457,5 +499,15 @@ mod tests {
 
         assert!(acknowledgement.matches(&delivery));
         assert!(delivery.delivery_id().starts_with("wg-users-2-"));
+    }
+
+    #[test]
+    fn rejects_structured_but_impossible_timestamps() {
+        let policy = VpnPolicy::default();
+        assert_eq!(
+            policy.manifest("2026-02-29T25:00:00Z"),
+            Err(PolicyError::InvalidGeneratedAt)
+        );
+        assert!(policy.manifest("2024-02-29T23:59:59.123Z").is_ok());
     }
 }
