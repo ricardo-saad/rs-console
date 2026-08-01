@@ -1,0 +1,19 @@
+[package]
+name = "rs-console-api"
+description = "Transport-neutral control-plane services for rs-console"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+rs-console-policy = { path = "../policy" }
+thiserror.workspace = true
+
+[dev-dependencies]
+base64.workspace = true
+
+[lints]
+workspace = true
+
