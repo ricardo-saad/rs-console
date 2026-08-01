@@ -1,0 +1,39 @@
+[package]
+name = "rs-console-server"
+description = "Axum and PostgreSQL runtime for rs-console"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+base64.workspace = true
+chrono.workspace = true
+clap.workspace = true
+home.workspace = true
+http.workspace = true
+idna.workspace = true
+idna_adapter.workspace = true
+rs-console-auth = { path = "../auth" }
+rs-console-policy = { path = "../policy" }
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+time.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+url.workspace = true
+uuid.workspace = true
+webauthn-rs.workspace = true
+
+[dev-dependencies]
+tower.workspace = true
+
+[lints]
+workspace = true

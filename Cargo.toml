@@ -1,5 +1,5 @@
 [workspace]
-members = ["api", "policy"]
+members = ["api", "auth", "policy", "server"]
 resolver = "2"
 
 [workspace.package]
@@ -10,11 +10,32 @@ license = "Apache-2.0"
 repository = "https://github.com/ricardo-saad/rs-console"
 
 [workspace.dependencies]
+async-trait = "0.1"
+axum = { version = "0.8", features = ["json", "tokio"] }
 base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+clap = { version = "4.5", features = ["derive", "env"] }
+# Transitive compatibility caps for the workspace's Rust 1.85 MSRV.
+home = "=0.5.11"
+http = "1.3"
+idna = "=1.0.3"
+idna_adapter = "=1.1.0"
+rand = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "0.10"
+sqlx = { version = "0.8", default-features = false, features = ["chrono", "json", "macros", "migrate", "postgres", "runtime-tokio-rustls", "uuid"] }
+subtle = "2.6"
 thiserror = "2.0"
+time = "=0.3.41"
+tokio = { version = "1.47", features = ["macros", "net", "rt-multi-thread", "signal"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+url = "=2.5.4"
+uuid = { version = "=1.19.0", features = ["serde", "v4"] }
+webauthn-rs = { version = "=0.5.4", default-features = false, features = ["conditional-ui", "danger-allow-state-serialisation"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
