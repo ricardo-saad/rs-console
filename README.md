@@ -141,7 +141,9 @@ RS_ROTATE_AUTH_EPOCH_ENABLED=true rs-console rotate-auth-epoch \
 - Cluster, Kubernetes, Talos, ingress, and deployment manifests.
 - Email delivery and the browser client (the canonical shell remains in
   `ricardosaad`).
-- `wg-nodes`, placement, fencing, health intake, and media reconciliation.
+- `wg-nodes` host-agent enrollment, Proxmox capacity scheduling/allocations
+  (ADR-0039), exclusive-writer fencing, health intake, and media
+  reconciliation.
 
 ## Development
 
